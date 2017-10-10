@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:util="http://www.springframework.org/schema/util"  
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.3.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+ 
+     <!-- <bean id="dhcp" class="org.apache.commons.dbcp2.BasicDataSource">
+           <property name="username" value="root"></property>
+           <property name="password" value="9@9e9@9esohu"></property>
+           <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+           <property name="url" value="jdbc:mysql://bj-cdb-knamk2tf.sql.tencentcdb.com:5398/test?useUnicode=true&amp;characterEncoding=utf8&amp;useSSL=false"></property>
+     </bean> -->
+     
+     <bean id="dhcp" class="org.apache.commons.dbcp2.BasicDataSource">
+           <property name="username" value="root"></property>
+           <property name="password" value=""></property>
+           <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+           <property name="url" value="jdbc:mysql:///cloud_note?useUnicode=true&amp;characterEncoding=utf8&amp;useSSL=false"></property>
+     </bean>
+     
+     <bean id="ssf" class="org.mybatis.spring.SqlSessionFactoryBean">
+          <property name="dataSource" ref="dhcp"></property>
+          <property name="mapperLocations" value="classpath:com/temp/sql/EmpMapper.xml"></property>
+     </bean>
+     
+     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+         <property name="basePackage" value="com.temp.dao"></property>
+         <!-- SqlSessionFactory注入 -->
+     </bean>
+     
+     <!-- 开启扫描 -->
+     <context:component-scan base-package="com.temp"/>
+     
+     <!-- handerMapping 引用@RequestMapping/@responseBody-->
+     <mvc:annotation-driven/>
+     
+     <!-- 配置事务管理组件 -->
+     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+           <property name="dataSource" ref="dhcp"></property>
+     </bean>
+     <!-- 开启 事务注解标记@Transaction-->
+     <!-- 当调用带@Transaction标记的方法或类时，将txManager事
+                 务管理功能切入到进去-->
+     <!--  
+     <tx:annotation-driven  transaction-manager="txManager"/>
+     -->
+     
+	<!-- XML配置的方式 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+		      <tx:method name="add*"/>
+		      <tx:method name="*"/>
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+	    <aop:pointcut id="target"  expression="within(com.temp.service..*)"/>
+	    <aop:advisor advice-ref="txAdvice" pointcut-ref="target"/>
+	</aop:config>
+	
+	<aop:aspectj-autoproxy />
+</beans>
